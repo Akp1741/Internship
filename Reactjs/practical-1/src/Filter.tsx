@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Filter= () => {
+const Filter : React.FC = () => {
   const [searchVal, setSearchVal] = useState<string>("");
 
   const technologyList: string[] = [

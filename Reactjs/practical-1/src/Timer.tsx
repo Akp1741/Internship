@@ -27,9 +27,9 @@ const [hrs = 0, mins = 0, secs = 0] = inputTime.split(':').map(Number);
   };
 
   return (
-    <div><div>Enter a Time for Countdown:</div>
+    <div>
       <input type="text" value={inputTime} onChange={(e) => setInputTime(e.target.value)} placeholder="HH:MM:SS" />
-      <p>Time remaining: {formatTime()}</p>  
+      <p>Time remaining: {formatTime()}</p>
     </div>
   );
 };

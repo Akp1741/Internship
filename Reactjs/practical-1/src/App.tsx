@@ -1,7 +1,6 @@
-
 import React from 'react';
 import Timer from './Timer';
-import ToggleButton from './Toggle Button';
+import ToggleButton from './ToggleButton';
 import List from './To-dolist';
 import Filter from './Filter';
 import './App.css';
@@ -19,6 +18,3 @@ import './App.css';
     )
   }
   export default App;
-
-
-
