@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-const Timer: React.FC = () => {
+
+  const Timer: React.FC = () => {
   const [totalSeconds, setTotalSeconds] = useState<number>(0);
   const [inputTime, setInputTime] = useState<string>('');
 
