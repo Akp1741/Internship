@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import "./Quiz.css";
 import data from "./data";
@@ -34,7 +35,6 @@ const Quiz: React.FC = () => {
     setScore(0);
     setShowScore(false);
   };
-  
 
   return (
     <div className="quiz-container">
@@ -63,3 +63,4 @@ const Quiz: React.FC = () => {
 
 export default Quiz;
 
+    
