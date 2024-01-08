@@ -7,12 +7,15 @@ import './App.css';
 import Counter from './Counter';
 import Form from './Hook';
 import Quiz from './Component/Quiz';
+import Number from './Guess';
 
   const App: React.FC =() =>{
     return (
     <div className="App">
   
           <><Quiz/></>
+          <Number/>
+         
       </div>
       
     )
