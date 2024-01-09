@@ -60,6 +60,5 @@ const Quiz: React.FC = () => {
     </div>
   );
 };
-
 export default Quiz;
 

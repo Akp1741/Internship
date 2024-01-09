@@ -6,17 +6,18 @@ interface VideoPlayerProps {
 }
 
 function VideoPlayer({ src, isPlaying }: VideoPlayerProps) {
-  const ref = useRef<HTMLVideoElement>(any);
+  const ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (isPlaying) {
       console.log('Calling video.play()');
-      ref.current.play()    
+      ref.current!.play();
     } else {
       console.log('Calling video.pause()');
-      ref.current.pause();
+      ref.current!.pause();
     }
   }, [isPlaying, src]);
+
 
   return <video ref={ref} src={src} loop playsInline />;
 }

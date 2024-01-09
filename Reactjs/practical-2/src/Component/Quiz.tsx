@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Quiz.css";
-import data from "./data";
+import Quizdata from "./Quizdata";
 
 const Quiz: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -8,12 +8,11 @@ const Quiz: React.FC = () => {
   const [showScore, setShowScore] = useState(false);
 
   const handleOptionClick = (option: string) => {
-    if (data[currentQuestion].correctAnswer === option) {
+    if (Quizdata[currentQuestion].correctAnswer === option) {
       setScore(score + 1);
     }
-
     const nextQuestion = currentQuestion + 1;
-    if (nextQuestion < data.length) {
+    if (nextQuestion < Quizdata.length) {
       setCurrentQuestion(nextQuestion);
     } else {
       setShowScore(true);
@@ -22,20 +21,18 @@ const Quiz: React.FC = () => {
 
   const handleNextClick = () => {
     const nextQuestion = currentQuestion + 1;
-    if (nextQuestion < data.length) {
+    if (nextQuestion < Quizdata.length) {
       setCurrentQuestion(nextQuestion);
     } else {
       setShowScore(true);
     }
   };
-
   const handleRestartClick = () => {
     setCurrentQuestion(0);
     setScore(0);
     setShowScore(false);
   };
   
-
   return (
     <div className="quiz-container">
       {showScore ? (
@@ -46,9 +43,9 @@ const Quiz: React.FC = () => {
       ) : (
         <div>
           <h2>Question {currentQuestion + 1}</h2>
-          <p>{data[currentQuestion].question}</p>
+          <p>{Quizdata[currentQuestion].question}</p>
           <ul>
-            {data[currentQuestion].options.map((option, index) => (
+            {Quizdata[currentQuestion].options.map((option, index) => (
               <li key={index} onClick={() => handleOptionClick(option)}>
                 {option}
               </li>
@@ -60,6 +57,5 @@ const Quiz: React.FC = () => {
     </div>
   );
 };
-
 export default Quiz;
 

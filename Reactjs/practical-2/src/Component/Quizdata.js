@@ -1,4 +1,4 @@
-export const data = [
+export const Quizdata = [
   {
     id: 1,
     question: "What is the capital of France?",
@@ -25,4 +25,4 @@ export const data = [
   },
 ];
 
-export default data;
+export default Quizdata;
