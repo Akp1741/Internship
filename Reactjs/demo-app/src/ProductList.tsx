@@ -1,7 +1,3 @@
-/*
-
-
-*/
 import React, { useState, useEffect } from 'react';
 
 interface User {
@@ -17,7 +13,8 @@ const Users: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [formData, setFormData] = useState<User>({ userId: 0, id: 0, title: '', body: '' });
-  const [showForm, setShowForm] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -59,12 +56,14 @@ const Users: React.FC = () => {
       localStorage.setItem('usersData', JSON.stringify(updatedUsers));
       setSelectedId(null);
       setFormData({ userId: 0, id: 0, title: '', body: '' });
+      setShowUpdateForm(false);
     }
   };
 
   const handleCancelUpdate = () => {
     setSelectedId(null);
     setFormData({ userId: 0, id: 0, title: '', body: '' });
+    setShowUpdateForm(false);
   };
 
   const handleUpdateClick = (id: number) => {
@@ -73,6 +72,7 @@ const Users: React.FC = () => {
 
     if (userToUpdate) {
       setFormData({ ...userToUpdate });
+      setShowUpdateForm(true);
     }
   };
 
@@ -86,7 +86,8 @@ const Users: React.FC = () => {
   };
 
   const handleAddData = () => {
-    setShowForm(true);
+    setFormData({ userId: 0, id: 0, title: '', body: '' });
+    setShowAddForm(true);
   };
 
   const handleAddDataSubmit = () => {
@@ -102,7 +103,7 @@ const Users: React.FC = () => {
     const updatedUsers = [newData, ...users]; // Show the last added data on top
     setUsers(updatedUsers);
     localStorage.setItem('usersData', JSON.stringify(updatedUsers));
-    setShowForm(false);
+    setShowAddForm(false);
     setFormData({ userId: 0, id: 0, title: '', body: '' });
   };
 
@@ -117,10 +118,10 @@ const Users: React.FC = () => {
   return (
     <div>
       <h2>User List</h2>
-      <button onClick={handleAddData}>Add Data</button>
 
-      {showForm && (
+      {showAddForm && (
         <div>
+          <h3>Add Data</h3>
           <label>
             Title:
             <input
@@ -143,6 +144,34 @@ const Users: React.FC = () => {
         </div>
       )}
 
+      {showUpdateForm && (
+        <div>
+          <h3>Update Data</h3>
+          <label>
+            Title:
+            <input
+              type='text'
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            />
+          </label>
+          <br />
+          <label>
+            Body:
+            <input
+              type='text'
+              value={formData.body}
+              onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+            />
+          </label>
+          <br />
+          <button onClick={handleUpdateData}>Update</button>
+          <button onClick={handleCancelUpdate}>Cancel</button>
+        </div>
+      )}
+
+      <button onClick={handleAddData}>Add Data</button>
+
       <table className='table table-bordered'>
         <thead>
           <tr style={{ border: '2px solid black', padding: '8px' }}>
@@ -161,7 +190,7 @@ const Users: React.FC = () => {
                 <td style={{ border: '1px solid black', padding: '8px' }}>{user.id}</td>
                 <td style={{ border: '1px solid black', padding: '8px' }}>{user.title}</td>
                 <td style={{ border: '1px solid black', padding: '8px' }}>{user.body}</td>
-                <td style={{ border: '1px solid black, padding: 8px' }}>
+                <td style={{ border: '1px solid black', padding: '8px' }}>
                   <button onClick={() => handleUpdateClick(user.id)}>Update</button>
                   <button onClick={() => handleDeleteData(user.id)}>Delete</button>
                 </td>
