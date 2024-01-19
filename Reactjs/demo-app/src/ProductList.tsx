@@ -1,205 +1,175 @@
-import React, { useState, useEffect } from 'react';
+  import React, { useState, useEffect } from 'react';
+  import {useNavigate } from 'react-router-dom';
+  import UpdateForm from './UpdateForms';
 
-interface User {
-  userId: number;
-  id: number;
-  title: string;
-  body: string;
-}
+  interface User {
+    userId: number;
+    id: number;
+    title: string;
+    body: string;
+  }
 
-const Users: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [formData, setFormData] = useState<User>({ userId: 0, id: 0, title: '', body: '' });
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const Users: React.FC = () => {
+    const navigate = useNavigate();
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [isViewVisible, setIsViewVisible] = useState(false);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const storedData = localStorage.getItem('usersData');
-        if (storedData) {
-          const parsedData: User[] = JSON.parse(storedData);
-          setUsers(parsedData);
+    useEffect(() => {
+      const fetchUsers = async () => {
+        try {
+          const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch data');
+          }
+
+          const data: User[] = await response.json();
+          setUsers(data);
+        } catch (error: any) {
+          setError(error.message || 'An error occurred while fetching data');
+        } finally {
           setLoading(false);
-          return;
         }
+      };
 
-        const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+      fetchUsers();
+    }, []);
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
-        }
+    const handleAddButtonClick = () => {
+      navigate('/addData');
+    };
+  const handleUpdateClick = async (user: User) => {
+    try {
+      const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${user.id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
 
-        const data: User[] = await response.json();
-        setUsers(data);
-        localStorage.setItem('usersData', JSON.stringify(data));
-      } catch (error: any) {
-        setError(error.message || 'An error occurred while fetching data');
-      } finally {
-        setLoading(false);
+      const userData: User = await response.json();
+      setSelectedUser(userData);
+      navigate('/UpdateForms'); 
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
+    const handleReadClick = (user: User) => {
+      setSelectedUser(user);
+      setIsViewVisible(true);
+    };
+
+    const handleUpdateSubmit = (id: number, title: string, body: string) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === id ? { ...u, title, body } : u))
+      );
+      setSelectedUser(null);
+      setIsViewVisible(false);
+      navigate('/ProductList');
+    };
+
+    const handleUpdateCancel = () => {
+      setSelectedUser(null);
+      setIsViewVisible(false);
+    };
+
+    const handleDeleteClick = (user: User) => {
+      const shouldDelete = window.confirm('Are you sure you want to delete this record?');
+      if (shouldDelete) {
+        handleDeleteConfirm(user);
       }
     };
 
-    fetchUsers();
-  }, []);
+    const handleDeleteConfirm = async (user: User) => {
+      try {
+        const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${user.id}`, {
+          method: 'DELETE',
+        });
 
-  const handleUpdateData = () => {
-    if (selectedId !== null) {
-      const updatedUsers = users.map((user) =>
-        user.id === selectedId ? { ...user, title: formData.title, body: formData.body } : user
-      );
+        if (!response.ok) {
+          throw new Error('Failed to delete data');
+        }
 
-      setUsers(updatedUsers);
-      localStorage.setItem('usersData', JSON.stringify(updatedUsers));
-      setSelectedId(null);
-      setFormData({ userId: 0, id: 0, title: '', body: '' });
-      setShowUpdateForm(false);
-    }
-  };
-
-  const handleCancelUpdate = () => {
-    setSelectedId(null);
-    setFormData({ userId: 0, id: 0, title: '', body: '' });
-    setShowUpdateForm(false);
-  };
-
-  const handleUpdateClick = (id: number) => {
-    setSelectedId(id);
-    const userToUpdate = users.find((user) => user.id === id);
-
-    if (userToUpdate) {
-      setFormData({ ...userToUpdate });
-      setShowUpdateForm(true);
-    }
-  };
-
-  const handleDeleteData = (id: number) => {
-    // Alert for delete
-    if (window.confirm('Are you sure you want to delete this data?')) {
-      const updatedUsers = users.filter((user) => user.id !== id);
-      setUsers(updatedUsers);
-      localStorage.setItem('usersData', JSON.stringify(updatedUsers));
-    }
-  };
-
-  const handleAddData = () => {
-    setFormData({ userId: 0, id: 0, title: '', body: '' });
-    setShowAddForm(true);
-  };
-
-  const handleAddDataSubmit = () => {
-    const newId = users.length > 0 ? users[users.length - 1].id + 1 : 1;
-
-    const newData: User = {
-      userId: Math.floor(Math.random() * 1000),
-      id: newId,
-      title: formData.title,
-      body: formData.body,
+        setUsers((prevUsers) => prevUsers.filter((u) => u.id !== user.id));
+        setIsViewVisible(false);
+      } catch (error) {
+        console.error('Error deleting data:', error);
+      }
     };
 
-    const updatedUsers = [newData, ...users]; // Show the last added data on top
-    setUsers(updatedUsers);
-    localStorage.setItem('usersData', JSON.stringify(updatedUsers));
-    setShowAddForm(false);
-    setFormData({ userId: 0, id: 0, title: '', body: '' });
-  };
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
-
-  return (
-    <div>
-      <h2>User List</h2>
-
-      {showAddForm && (
+    return (
+      <div>
+        <h2>User List</h2>
         <div>
-          <h3>Add Data</h3>
-          <label>
-            Title:
-            <input
-              type='text'
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
-          </label>
-          <br />
-          <label>
-            Body:
-            <input
-              type='text'
-              value={formData.body}
-              onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-            />
-          </label>
-          <br />
-          <button onClick={handleAddDataSubmit}>Add</button>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+            <div>
+              <button onClick={handleAddButtonClick}>Add Data</button>
+            </div>
+          </div>
         </div>
-      )}
 
-      {showUpdateForm && (
-        <div>
-          <h3>Update Data</h3>
-          <label>
-            Title:
-            <input
-              type='text'
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
-          </label>
-          <br />
-          <label>
-            Body:
-            <input
-              type='text'
-              value={formData.body}
-              onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-            />
-          </label>
-          <br />
-          <button onClick={handleUpdateData}>Update</button>
-          <button onClick={handleCancelUpdate}>Cancel</button>
-        </div>
-      )}
+        {!selectedUser && isViewVisible && (
+          <div>
+            <h2>Click on View Button to Show the data</h2>
+          </div>
+        )}
 
-      <button onClick={handleAddData}>Add Data</button>
+  {selectedUser && !isViewVisible && (
+          <UpdateForm
+            updateSubmit={handleUpdateSubmit}
+            updateCancel={handleUpdateCancel}
+            user={selectedUser}
+          />
+        )}
 
-      <table className='table table-bordered'>
-        <thead>
-          <tr style={{ border: '2px solid black', padding: '8px' }}>
-            <th style={{ border: '2px solid black', padding: '8px' }}>User ID</th>
-            <th style={{ border: '2px solid black', padding: '8px' }}>ID</th>
-            <th style={{ border: '2px solid black', padding: '8px' }}>Title</th>
-            <th style={{ border: '2px solid black', padding: '8px' }}>Body</th>
-            <th style={{ border: '2px solid black', padding: '8px' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.length > 0 &&
-            users.map((user) => (
+        <button onClick={() => setIsViewVisible(!isViewVisible)}>
+          {isViewVisible ? ' Show View' : 'Hide View'}
+        </button>
+
+        {isViewVisible && selectedUser && (
+          <div>
+            <h3>User Details</h3>
+            <p>User ID: {selectedUser.userId}</p>
+            <p>ID: {selectedUser.id}</p>
+            <p>Title: {selectedUser.title}</p>
+            <p>Body: {selectedUser.body}</p>
+            <button onClick={handleUpdateCancel}>Cancel </button>
+          </div>
+        )}
+
+        <table className='table table-bordered' style={{ display: isViewVisible ? 'none' : 'block' }}>
+          <thead>
+            <tr style={{ border: '2px solid black', padding: '8px' }}>
+              <th style={{ border: '2px solid black', padding: '8px' }}>User ID</th>
+              <th style={{ border: '2px solid black', padding: '8px' }}>ID</th>
+              <th style={{ border: '2px solid black', padding: '8px' }}>Title</th>
+              <th style={{ border: '2px solid black', padding: '8px' }}>Body</th>
+              <th style={{ border: '2px solid black', padding: '8px' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && <tr>Loading...</tr>}
+            {error && <tr>{error}</tr>}
+            {users.map((user) => (
               <tr key={user.id}>
                 <td style={{ border: '1px solid black', padding: '8px' }}>{user.userId}</td>
                 <td style={{ border: '1px solid black', padding: '8px' }}>{user.id}</td>
                 <td style={{ border: '1px solid black', padding: '8px' }}>{user.title}</td>
                 <td style={{ border: '1px solid black', padding: '8px' }}>{user.body}</td>
                 <td style={{ border: '1px solid black', padding: '8px' }}>
-                  <button onClick={() => handleUpdateClick(user.id)}>Update</button>
-                  <button onClick={() => handleDeleteData(user.id)}>Delete</button>
+                  <button onClick={() => handleReadClick(user)}>Read</button>
+                  <button onClick={() => handleUpdateClick(user)}>Update</button>
+                  <button onClick={() => handleDeleteClick(user)}>Delete</button>
                 </td>
               </tr>
             ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
-export default Users;
+  export default Users;
+
