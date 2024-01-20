@@ -51,14 +51,10 @@ const AddData: React.FC = () => {
       }
 
       console.log('Data added successfully to API');
-
-      // Show success message
       alert('Data added successfully!');
-      navigate('/ProductList'); // Navigate to the desired route
+      navigate('/ProductList'); 
     } catch (error) {
       console.error('Error adding data to API:', error);
-
-      // Show error message
       alert('Error adding data. Please try again.');
     }
   };

@@ -31,7 +31,7 @@ const UpdateForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Update the corresponding data in storedData
+  
     const updatedData = storedData.map((item) => {
       if (item.id === data) {
         return {
@@ -43,11 +43,7 @@ const UpdateForm: React.FC = () => {
       }
       return item;
     });
-
-    // Save the updated storedData back to localStorage
     localStorage.setItem('myData', JSON.stringify(updatedData));
-
-    // You can also update the state if necessary
     console.log(updatedData);
     setStoredData(updatedData);
 

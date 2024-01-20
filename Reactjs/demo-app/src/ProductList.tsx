@@ -52,13 +52,13 @@ const Users: React.FC = () => {
   const handleRead = (user: User) => {
     setSelectedUser(user);
     setIsViewVisible(true);
-    setIsTableVisible(false); // Hide the table
+    setIsTableVisible(false); 
   };
 
   const handleReadCancel = () => {
     setSelectedUser(null);
     setIsViewVisible(false);
-    setIsTableVisible(true); // Show the table
+    setIsTableVisible(true); 
     navigate('/ProductList');
   };
 
@@ -70,12 +70,10 @@ const Users: React.FC = () => {
     }
   
     try {
-      // Make an API call to delete the data
+  
       await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, {
         method: 'DELETE',
       });
-  
-      // Remove the deleted item from local storage
       const updatedUsers = users.filter((user) => user.id !== id);
       setUsers(updatedUsers);
       localStorage.setItem('myData', JSON.stringify(updatedUsers));
