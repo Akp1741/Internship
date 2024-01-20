@@ -3,12 +3,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
-  const username: string = 'ayush@gmail.com';
+  const username: string = 'ayush12@gmail.com';
   const password: string = 'ayush123';
 
-  const [user, setUser] = useState<string>('');
-  const [pass, setPass] = useState<string>('');
   const navigate = useNavigate();
+  const [user, setUser] = useState<string>('');
+  const [pass, setPass] = useState<string>('')
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const handleLogin = () => {

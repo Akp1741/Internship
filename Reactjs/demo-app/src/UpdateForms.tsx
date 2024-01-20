@@ -1,79 +1,99 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface User {
-  userId: string;
-  id: string;
+  userId: number;
+  id: number;
   title: string;
   body: string;
 }
 
-const UpdateForms: React.FC = () => {
+const UpdateForm: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const data = location.state?.data || '123';
 
-  const [userId, setUserId] = useState<string>('');
-  const [id, setId] = useState<string>('');
+  const [storedData, setStoredData] = useState<User[]>([]);
+  const [UserID, setUserID] = useState<string>('');
   const [title, setTitle] = useState<string>('');
   const [body, setBody] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [successMessage, setSuccessMessage] = useState<string>('');
-  
 
-  const handleUpdateData = async () => {
-    try {
-      const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
-        method: 'POST', 
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
+  useEffect(() => {
+    const retrievedData = localStorage.getItem('myData');
+
+    if (retrievedData) {
+      setStoredData(JSON.parse(retrievedData));
+    }
+  }, []);
+
+  const Userdata = storedData.filter((task) => task.id === data);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Update the corresponding data in storedData
+    const updatedData = storedData.map((item) => {
+      if (item.id === data) {
+        return {
+          ...item,
+          userId: parseInt(UserID, 10),
           title,
           body,
-        } as User),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to add data');
+        };
       }
-  
-      console.log('Data updated successfully');
-      setErrorMessage('');
-      setSuccessMessage('Data updated successfully');
-      resetForm();
-      window.alert('Data updated successfully');
-      navigate('/ProductList');
-    } catch (error) {
-      console.error('Error adding data:', error);
-      setErrorMessage('Error adding data. Please try again.');
-      setSuccessMessage('');
-    }
-  };
-    const resetForm = () => {
-    setUserId('');
-    setId('');
-    setTitle('');
-    setBody('');
+      return item;
+    });
+
+    // Save the updated storedData back to localStorage
+    localStorage.setItem('myData', JSON.stringify(updatedData));
+
+    // You can also update the state if necessary
+    console.log(updatedData);
+    setStoredData(updatedData);
+
+    navigate('/ProductList');
   };
 
   return (
-    <div style={{ marginTop: 50, marginLeft: 100 }}>
+    <div style={{ margin: 20 }}>
       <h2>Update Data</h2>
-      
-      <form className="vertical-form">
-        <div>
-          <table border={1} className='table table-bordered' style={{ display: 'auto', justifyContent: 'center', marginBottom: '8px',padding:'10px' }}>
-    
-            <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} /><br/>
-            <textarea value={body} placeholder="Body" onChange={(e) => setBody(e.target.value)} /><br/>
-            <button type="button" onClick={handleUpdateData}>
-              Update Data
-            </button>
-          </table>
-        </div>
-      </form>
+      {Userdata.map((item) => (
+        <form onSubmit={handleSubmit} style={{ margin: 20 }} key={item.id}>
+          <label>
+            UserID:
+            <input
+              type="number"
+              name="userId"
+              value={item.userId}
+              onChange={(e) => setUserID(e.target.value)}
+            />
+          </label>
+          <br />
+          <label>
+            Title:
+            <input
+              type="text"
+              name="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </label>
+          <br />
+          <label>
+            Body:
+            <input
+              type="text"
+              name="body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+            />
+          </label>
+          <br />
+          <button type="submit">Update</button>
+        </form>
+      ))}
     </div>
   );
 };
 
-export default UpdateForms;
+export default UpdateForm;

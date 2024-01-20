@@ -1,175 +1,146 @@
-  import React, { useState, useEffect } from 'react';
-  import {useNavigate } from 'react-router-dom';
-  import UpdateForm from './UpdateForms';
 
-  interface User {
-    userId: number;
-    id: number;
-    title: string;
-    body: string;
-  }
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-  const Users: React.FC = () => {
-    const navigate = useNavigate();
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [isViewVisible, setIsViewVisible] = useState(false);
+interface User {
+  userId: number;
+  id: number;
+  title: string;
+  body: string;
+}
 
-    useEffect(() => {
-      const fetchUsers = async () => {
-        try {
-          const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+const Users: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isViewVisible, setIsViewVisible] = useState(false);
+  const [isTableVisible, setIsTableVisible] = useState(true); // New state
+  const navigate = useNavigate();
 
-          if (!response.ok) {
-            throw new Error('Failed to fetch data');
-          }
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts/');
+        const jsonData: User[] = await response.json();
 
-          const data: User[] = await response.json();
-          setUsers(data);
-        } catch (error: any) {
-          setError(error.message || 'An error occurred while fetching data');
-        } finally {
-          setLoading(false);
+        localStorage.setItem('myData', JSON.stringify(jsonData));
+        const retrievedData = localStorage.getItem('myData');
+
+        if (retrievedData) {
+          setUsers(JSON.parse(retrievedData));
         }
-      };
 
-      fetchUsers();
-    }, []);
-
-    const handleAddButtonClick = () => {
-      navigate('/addData');
-    };
-  const handleUpdateClick = async (user: User) => {
-    try {
-      const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${user.id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch user data');
+        console.log(jsonData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const userData: User = await response.json();
-      setSelectedUser(userData);
-      navigate('/UpdateForms'); 
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
+    fetchUsers();
+  }, []);
+
+  const handleAddButton = () => {
+    navigate('/AddData');
   };
 
-    const handleReadClick = (user: User) => {
-      setSelectedUser(user);
-      setIsViewVisible(true);
-    };
+  const handleUpdate = (id: number) => {
+    navigate('/UpdateForms', { state: { data: id } });
+  };
 
-    const handleUpdateSubmit = (id: number, title: string, body: string) => {
-      setUsers((prevUsers) =>
-        prevUsers.map((u) => (u.id === id ? { ...u, title, body } : u))
-      );
-      setSelectedUser(null);
-      setIsViewVisible(false);
-      navigate('/ProductList');
-    };
+  const handleRead = (user: User) => {
+    setSelectedUser(user);
+    setIsViewVisible(true);
+    setIsTableVisible(false); // Hide the table
+  };
 
-    const handleUpdateCancel = () => {
-      setSelectedUser(null);
-      setIsViewVisible(false);
-    };
+  const handleReadCancel = () => {
+    setSelectedUser(null);
+    setIsViewVisible(false);
+    setIsTableVisible(true); // Show the table
+    navigate('/ProductList');
+  };
 
-    const handleDeleteClick = (user: User) => {
-      const shouldDelete = window.confirm('Are you sure you want to delete this record?');
-      if (shouldDelete) {
-        handleDeleteConfirm(user);
-      }
-    };
+  const handleDelete = async (id: number) => {
+    const shouldDelete = window.confirm('Are you sure you want to delete this record?');
+    
+    if (!shouldDelete) {
+      return;
+    }
+  
+    try {
+      // Make an API call to delete the data
+      await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, {
+        method: 'DELETE',
+      });
+  
+      // Remove the deleted item from local storage
+      const updatedUsers = users.filter((user) => user.id !== id);
+      setUsers(updatedUsers);
+      localStorage.setItem('myData', JSON.stringify(updatedUsers));
+  
+      alert('Data deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting data:', error);
+      alert('Error deleting data. Please try again.');
+    }
+  
+  };
 
-    const handleDeleteConfirm = async (user: User) => {
-      try {
-        const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${user.id}`, {
-          method: 'DELETE',
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to delete data');
-        }
-
-        setUsers((prevUsers) => prevUsers.filter((u) => u.id !== user.id));
-        setIsViewVisible(false);
-      } catch (error) {
-        console.error('Error deleting data:', error);
-      }
-    };
-
-    return (
+  return (
+    <div>
+      <h2>User List</h2>
       <div>
-        <h2>User List</h2>
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-            <div>
-              <button onClick={handleAddButtonClick}>Add Data</button>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+          <div>
+            <button onClick={handleAddButton}>Add Data</button>
           </div>
         </div>
+      </div>
+      {isViewVisible && selectedUser && (
+        <div>
+          <h3>User Details</h3>
+          <p>User ID: {selectedUser.userId}</p>
+          <p>ID: {selectedUser.id}</p>
+          <p>Title: {selectedUser.title}</p>
+          <p>Body: {selectedUser.body}</p>
+          <button onClick={handleReadCancel}>Cancel</button>
+        </div>
+      )}
 
-        {!selectedUser && isViewVisible && (
-          <div>
-            <h2>Click on View Button to Show the data</h2>
-          </div>
-        )}
-
-  {selectedUser && !isViewVisible && (
-          <UpdateForm
-            updateSubmit={handleUpdateSubmit}
-            updateCancel={handleUpdateCancel}
-            user={selectedUser}
-          />
-        )}
-
-        <button onClick={() => setIsViewVisible(!isViewVisible)}>
-          {isViewVisible ? ' Show View' : 'Hide View'}
-        </button>
-
-        {isViewVisible && selectedUser && (
-          <div>
-            <h3>User Details</h3>
-            <p>User ID: {selectedUser.userId}</p>
-            <p>ID: {selectedUser.id}</p>
-            <p>Title: {selectedUser.title}</p>
-            <p>Body: {selectedUser.body}</p>
-            <button onClick={handleUpdateCancel}>Cancel </button>
-          </div>
-        )}
-
-        <table className='table table-bordered' style={{ display: isViewVisible ? 'none' : 'block' }}>
+      {isTableVisible && ( 
+        <table>
           <thead>
             <tr style={{ border: '2px solid black', padding: '8px' }}>
-              <th style={{ border: '2px solid black', padding: '8px' }}>User ID</th>
+              <th style={{ border: '2px solid black', padding: '8px' }}>userID</th>
               <th style={{ border: '2px solid black', padding: '8px' }}>ID</th>
               <th style={{ border: '2px solid black', padding: '8px' }}>Title</th>
               <th style={{ border: '2px solid black', padding: '8px' }}>Body</th>
               <th style={{ border: '2px solid black', padding: '8px' }}>Actions</th>
             </tr>
           </thead>
+
           <tbody>
-            {loading && <tr>Loading...</tr>}
-            {error && <tr>{error}</tr>}
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td style={{ border: '1px solid black', padding: '8px' }}>{user.userId}</td>
-                <td style={{ border: '1px solid black', padding: '8px' }}>{user.id}</td>
-                <td style={{ border: '1px solid black', padding: '8px' }}>{user.title}</td>
-                <td style={{ border: '1px solid black', padding: '8px' }}>{user.body}</td>
+            {users.map((item) => (
+              <tr key={item.id}>
+                <td style={{ border: '1px solid black', padding: '8px' }}>{item.userId}</td>
+                <td style={{ border: '1px solid black', padding: '8px' }}>{item.id}</td>
+                <td style={{ border: '1px solid black', padding: '8px' }}>{item.title}</td>
+                <td style={{ border: '1px solid black', padding: '8px' }}>{item.body}</td>
                 <td style={{ border: '1px solid black', padding: '8px' }}>
-                  <button onClick={() => handleReadClick(user)}>Read</button>
-                  <button onClick={() => handleUpdateClick(user)}>Update</button>
-                  <button onClick={() => handleDeleteClick(user)}>Delete</button>
+                  <button onClick={() => handleRead(item)}>Read</button>
+                  <button onClick={() => handleUpdate(item.id)}>Update</button>
+                  <button onClick={() => handleDelete(item.id)}>Delete</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-    );
-  };
+      )}
+    </div>
+  );
+};
 
-  export default Users;
+export default Users;
 
